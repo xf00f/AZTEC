@@ -46,6 +46,21 @@ jobs:
             - run:
                 name: "Test Packages"
                 command: ./node_modules/.bin/lerna run test
+    coverage:
+        working_directory: ~/repo
+        docker:
+            - image: circleci/node:9
+            - image: 0xorg/devnet:latest
+        steps:
+            - restore_cache:
+                keys: 
+                    - repo-{{ .Environment.CIRCLE_SHA1 }}
+            - run:
+                name: "Run Docker Ethereum Node"
+                command: docker run -it -d --rm -p 8545:8501 -p 8546:8546 0xorg/devnet:latest /bin/bash
+            - run:
+                name: "Cover Packages"
+                command: ./node_modules/.bin/lerna run coverage
 workflows:
     version: 2
     main:
@@ -55,6 +70,12 @@ workflows:
                     branches:
                         ignore: gh-pages
             - lint:
+                requires:
+                    - build
+                filters:
+                    branches:
+                        ignore: gh-pages
+            - test:
                 requires:
                     - build
                 filters:

@@ -1,8 +1,9 @@
 /* global artifacts, expect, contract, beforeEach, it:true */
 // ### External Dependencies
 const aztec = require('aztec.js');
-const { constants: { CRS }, exceptions } = require('@aztec/dev-utils');
+const { constants: { CRS } } = require('@aztec/dev-utils');
 const crypto = require('crypto');
+const truffleAssert = require('truffle-assertions');
 const { padLeft, sha3 } = require('web3-utils');
 
 // ### Artifacts
@@ -348,7 +349,7 @@ contract('JoinSplit', (accounts) => {
 
             const fakeProofData = `0x${proofData.slice(0x02, 0x42)}${fakeChallenge}${proofData.slice(0x82)}`;
 
-            exceptions.catchRevert(aztecJoinSplit.validateJoinSplit(fakeProofData, senderAddress, CRS, {
+            truffleAssert.fails(aztecJoinSplit.validateJoinSplit(fakeProofData, senderAddress, CRS, {
                 from: accounts[0],
                 gas: 4000000,
             }));
@@ -396,7 +397,7 @@ contract('JoinSplit', (accounts) => {
                 outputNotes
             );
 
-            exceptions.catchRevert(aztecJoinSplit.validateJoinSplit(proofData, senderAddress, CRS, {
+            truffleAssert.fails(aztecJoinSplit.validateJoinSplit(proofData, senderAddress, CRS, {
                 from: accounts[0],
                 gas: 4000000,
             }));
@@ -441,7 +442,7 @@ contract('JoinSplit', (accounts) => {
                 outputNotes
             );
 
-            exceptions.catchRevert(aztecJoinSplit.validateJoinSplit(proofData, senderAddress, CRS, {
+            truffleAssert.fails(aztecJoinSplit.validateJoinSplit(proofData, senderAddress, CRS, {
                 from: accounts[0],
                 gas: 4000000,
             }));
@@ -485,7 +486,7 @@ contract('JoinSplit', (accounts) => {
                 outputNotes
             );
 
-            exceptions.catchRevert(aztecJoinSplit.validateJoinSplit(proofData, senderAddress, CRS, {
+            truffleAssert.fails(aztecJoinSplit.validateJoinSplit(proofData, senderAddress, CRS, {
                 from: accounts[0],
                 gas: 4000000,
             }));
@@ -528,7 +529,7 @@ contract('JoinSplit', (accounts) => {
                 notes.slice(0, 2)
             );
 
-            exceptions.catchRevert(aztecJoinSplit.validateJoinSplit(proofData, senderAddress, CRS, {
+            truffleAssert.fails(aztecJoinSplit.validateJoinSplit(proofData, senderAddress, CRS, {
                 from: senderAddress,
                 gas: 4000000,
             }));
@@ -562,7 +563,7 @@ contract('JoinSplit', (accounts) => {
                 outputOwners,
                 []
             );
-            await exceptions.catchRevert(aztecJoinSplit.validateJoinSplit(proofData, senderAddress, CRS, {
+            await truffleAssert.fails(aztecJoinSplit.validateJoinSplit(proofData, senderAddress, CRS, {
                 from: senderAddress,
                 gas: 4000000,
             }));

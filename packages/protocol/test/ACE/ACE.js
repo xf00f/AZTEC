@@ -2,7 +2,7 @@
 // ### External Dependencies
 const BN = require('bn.js');
 const { padLeft, sha3 } = require('web3-utils');
-const { exceptions } = require('@aztec/dev-utils');
+const truffleAssert = require('truffle-assertions');
 
 // ### Internal Dependencies
 
@@ -54,13 +54,13 @@ contract('ACE', (accounts) => {
         });
 
         it('cannot set a proof if not owner', async () => {
-            await exceptions.catchRevert(ace.setProof(1, accounts[1], true, {
+            await truffleAssert.reverts(ace.setProof(1, accounts[1], true, {
                 from: accounts[1],
             }));
         });
 
         it('cannot set the common reference string if not owner', async () => {
-            await exceptions.catchRevert(ace.setCommonReferenceString(CRS, {
+            await truffleAssert.reverts(ace.setCommonReferenceString(CRS, {
                 from: accounts[1],
             }));
         });
@@ -84,8 +84,8 @@ contract('ACE', (accounts) => {
                 ...aztecAccounts.map(({ publicKey }, i) => note.create(publicKey, i * 10)),
             ];
             await ace.setCommonReferenceString(CRS);
-            const aztec = await JoinSplit.new();
-            await ace.setProof(1, aztec.address, true);
+            const aztecJoinSplit = await JoinSplit.new();
+            await ace.setProof(1, aztecJoinSplit.address, true);
             const inputNotes = notes.slice(2, 4);
             const outputNotes = notes.slice(0, 2);
             const kPublic = 40;
@@ -97,7 +97,7 @@ contract('ACE', (accounts) => {
                 inputNoteOwners: aztecAccounts.slice(2, 4),
                 publicOwner,
                 kPublic,
-                validatorAddress: aztec.address,
+                validatorAddress: aztecJoinSplit.address,
             }));
             const proofOutput = outputCoder.getProofOutput(expectedOutput, 0);
             proofHash = outputCoder.hashProofOutput(proofOutput);
@@ -118,7 +118,7 @@ contract('ACE', (accounts) => {
             ].join('');
             const storagePtr = sha3(`0x${storageHash}`).slice(2);
             const result = await web3.eth.getStorageAt(ace.address, new BN(storagePtr, 16));
-            expect(result).to.equal('0x01');
+            expect(Number(result)).to.equal(Number('0x01'));
         });
 
         it('validateProofByHash will return true for a previously validated proof', async () => {

@@ -8,13 +8,11 @@ trap cleanup EXIT
 
 cleanup() {
   # Kill the devnet instance that we started (if we started one and if it's still running).  
-  if [ "$SOLIDITY_COVERAGE" = true ]; then
-    if [ docker inspect -f "{{.State.Running}}" ethnode = true ]; then
+  if [ -n "$devnet_pid" ]; then
+    if [ "$MODE" = coverage ] && docker inspect -f "{{.State.Running}}" ethnode > /dev/null; then
       docker stop $(docker ps -aq --filter ancestor=0xorg/devnet:latest) > /dev/null
-    fi
-  else
-    if [ -n "$devnet_pid" ] && ps -p $devnet_pid > /dev/null; then
-      kill -9 $devnet_pid
+    elif ps -p $devnet_pid > /dev/null; then
+        kill -9 $devnet_pid
     fi
   fi
 }
@@ -24,7 +22,7 @@ devnet_running() {
 }
 
 start_devnet() {
-  if [ "$SOLIDITY_COVERAGE" = true ]; then
+  if [ "$MODE" = coverage ]; then
     docker run -it -d --rm -p 8545:8501 -p 8546:8546 --name ethnode 0xorg/devnet:latest /bin/bash > /dev/null &
   else
     ./node_modules/.bin/ganache-cli --networkId 1234 --gasLimit 0xfffffffffff > /dev/null &
@@ -46,8 +44,17 @@ if [ "$SOLC_NIGHTLY" = true ]; then
 fi
 
 ./node_modules/.bin/truffle version
-./node_modules/.bin/truffle test "$@"
 
-if [ "$CONTINUOUS_INTEGRATION" = true ]; then
-  cat coverage/lcov.info | node_modules/.bin/coveralls
+if [ "$MODE" = coverage ]; then
+  if [ ! -d ./build ]; then
+    ./node_modules/.bin/truffle compile --all > /dev/null
+  fi
+  ./node_modules/.bin/truffle test --network coverage "$@"
+  ./node_modules/.bin/istanbul report html
+  
+  if [ "$CONTINUOUS_INTEGRATION" = true ]; then
+    cat coverage/lcov.info | node_modules/.bin/coveralls
+  fi
+else
+  ./node_modules/.bin/truffle test "$@"
 fi

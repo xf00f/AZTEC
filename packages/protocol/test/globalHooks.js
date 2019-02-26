@@ -2,7 +2,7 @@
 
 
 after('generate coverage report', async () => {
-    if (process.env.SOLIDITY_COVERAGE) {
+    if (process.env.MODE === 'coverage') {
         await global.coverageSubprovider.writeCoverageAsync();
     }
 });

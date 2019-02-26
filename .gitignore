@@ -1,7 +1,9 @@
 # folders
+.0x-artifacts/
 .idea/
 .nyc_output/
 .vscode/
+artifacts/
 build/
 coverage/
 coverageEnv/

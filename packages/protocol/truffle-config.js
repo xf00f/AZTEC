@@ -1,26 +1,10 @@
 require('dotenv').config();
 const { CoverageSubprovider } = require('@0x/sol-coverage');
-const { ProfilerSubprovider } = require('@0x/sol-profiler');
 const { RevertTraceSubprovider, TruffleArtifactAdapter } = require('@0x/sol-trace');
-const { constants: { DEVNET_SEALER } } = require('@aztec/dev-utils');
-const ProviderEngine = require('web3-provider-engine');
-const RpcProvider = require('web3-provider-engine/subproviders/rpc.js');
-const { toWei, toHex } = require('web3-utils');
+const { GanacheSubprovider } = require('@0x/subproviders');
 const HDWalletProvider = require('truffle-hdwallet-provider');
-
-const web3 = require('./web3Provider');
-
-// Checking that the docker is running by filtering the devnet's default params. Note 
-// that it is possible, although unlikely, that the network id is 50 and the sealer 
-// account has a non-zero balance even when running ganache.
-async function checkCoverageNetwork() {
-    const networkId = await web3.eth.net.getId();
-    const balance = web3.utils.fromWei(await web3.eth.getBalance(DEVNET_SEALER));
-    if (networkId !== 50 || balance === '0') {
-        console.log('Coverage only works with the 0xorg/devnet docker image and NOT with other ethereum nodes like ganache');
-        process.exit(1);
-    }
-}
+const ProviderEngine = require('web3-provider-engine');
+const { toWei, toHex } = require('web3-utils');
 
 // You must specify PRIVATE_KEY and INFURA_API_KEY in your .env file
 // Feel free to replace PRIVATE_KEY with a MNEMONIC to use an hd wallet
@@ -48,23 +32,13 @@ let ropstenProvider = {};
 
 const projectRoot = '';
 const solcVersion = '0.5.4';
-const defaultFromAddress = DEVNET_SEALER;
+const defaultFromAddress = '0x98c0047400dA37d278E76e78c6F60A7882Ae064d';
 const isVerbose = true;
 const artifactAdapter = new TruffleArtifactAdapter(projectRoot, solcVersion);
 const provider = new ProviderEngine();
 
 switch (process.env.MODE) {
-    case 'profile':
-        global.profilerSubprovider = new ProfilerSubprovider(
-            artifactAdapter,
-            defaultFromAddress,
-            isVerbose
-        );
-        global.profilerSubprovider.stop();
-        provider.addProvider(global.profilerSubprovider);
-        break;
     case 'coverage':
-        checkCoverageNetwork();
         global.coverageSubprovider = new CoverageSubprovider(
             artifactAdapter,
             defaultFromAddress,
@@ -87,7 +61,10 @@ switch (process.env.MODE) {
         break;
 }
 
-provider.addProvider(new RpcProvider({ rpcUrl: 'http://localhost:8545' }));
+let ganacheSubprovider = {};
+ganacheSubprovider = new GanacheSubprovider();
+provider.addProvider(ganacheSubprovider);
+
 provider.start((err) => {
     if (err !== undefined) {
         console.log(err);

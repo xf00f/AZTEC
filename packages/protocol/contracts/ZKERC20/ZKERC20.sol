@@ -54,13 +54,25 @@ library EIP712Utils {
 }
 
 contract ZKERC20 {
-
     using NoteUtils for bytes;
+
+    event LogCreateZKERC20(
+        address ace,
+        address linkedToken,
+        uint256 scalingFactor,
+        bool canMint,
+        bool canBurn,
+        bool canConvert
+    );
+
+    event LogCreateNote(bytes32 indexed _noteHash, address indexed _owner, bytes _metadata);
+    event LogDestroyNote(bytes32 indexed _noteHash, address indexed _owner, bytes _metadata);
+    event LogConvertTokens(address indexed _owner, uint256 _value);
+    event LogRedeemTokens(address indexed _owner, uint256 _value);
 
     ACE public ace;
     ERC20 public linkedToken;
-    NoteRegistry public noteRegistry;
-    NoteRegistry.Flags public flags;
+    ACE.Flags public flags;
 
     string public name;
     uint256 public scalingFactor;
@@ -71,52 +83,39 @@ contract ZKERC20 {
         "NoteSignature(bytes32 noteHash, address spender, bool status)"
     );
 
-    event LogCreateNoteRegistry(address noteRegistry);
-
-    event LogCreateZKERC20(
-        bool canMint,
-        bool canBurn,
-        bool canConvert,
-        uint256 scalingFactor,
-        address linkedToken,
-        address ace
-    );
-
-    event LogCreateNote(bytes32 indexed _noteHash, address indexed _owner, bytes _metadata);
-    event LogDestroyNote(bytes32 indexed _noteHash, address indexed _owner, bytes _metadata);
-    event LogConvertTokens(address indexed _owner, uint256 _value);
-    event LogRedeemTokens(address indexed _owner, uint256 _value);
-
     constructor(
         string memory _name,
+        address _aceAddress,
+        address _linkedTokenAddress,
+        uint256 _scalingFactor,
         bool _canMint,
         bool _canBurn,
-        bool _canConvert,
-        uint256 _scalingFactor,
-        address _linkedTokenAddress,
-        address _aceAddress
+        bool _canConvert
     ) public {
         name = _name;
-        flags = NoteRegistry.Flags(_canMint, _canBurn, _canConvert);
-        scalingFactor = _scalingFactor;
         ace = ACE(_aceAddress);
         linkedToken = ERC20(_linkedTokenAddress);
-        noteRegistry = NoteRegistry(ace.createNoteRegistry(
-            _canMint,
-            _canBurn,
-            _canConvert,
-            _scalingFactor,
-            _linkedTokenAddress
-        ));
-        domainHash = EIP712Utils.constructDomainHash("ZKERC20", "0.1.0");
-        emit LogCreateNoteRegistry(address(noteRegistry));
-        emit LogCreateZKERC20(
-            _canMint,
-            _canBurn,
-            _canConvert,
-            _scalingFactor,
+        scalingFactor = _scalingFactor;
+        flags = ACE.Flags({
+            canMint: _canMint, 
+            canBurn: _canBurn, 
+            canConvert: _canConvert
+        });
+        ace.createNoteRegistry(
             _linkedTokenAddress,
-            _aceAddress
+            _scalingFactor,
+            _canMint,
+            _canBurn,
+            _canConvert
+        );
+        domainHash = EIP712Utils.constructDomainHash("ZKERC20", "0.1.0");
+        emit LogCreateZKERC20(
+            _aceAddress,
+            _linkedTokenAddress,
+            _scalingFactor,
+            _canMint,
+            _canBurn,
+            _canConvert
         );
     }
     
@@ -124,7 +123,6 @@ contract ZKERC20 {
         bytes memory proofOutputs = ace.validateProof(1, msg.sender, _proofData);
         require(proofOutputs.length != 0, "proof invalid!");
         bytes memory proofOutput = proofOutputs.get(0);
-        
         
         require(ace.updateNoteRegistry(proofOutput, 1, address(this)), "could not update note registry!");
         
@@ -182,7 +180,7 @@ contract ZKERC20 {
             ,
             ,
             address noteOwner
-        ) = noteRegistry.registry(_noteHash);
+        ) = ace.getNote(msg.sender, _noteHash);
 
         require(status == 1, "only unspent notes can be approved");
 

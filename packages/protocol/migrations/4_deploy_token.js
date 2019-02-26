@@ -25,12 +25,12 @@ module.exports = (deployer, network) => {
             return deployer.deploy(
                 ZKERC20,
                 'Cocoa',
+                aceAddress,
+                erc20Address,
+                ERC20_SCALING_FACTOR,
                 canMint,
                 canBurn,
-                canConvert,
-                ERC20_SCALING_FACTOR,
-                erc20Address,
-                aceAddress
+                canConvert
             );
         });
     });

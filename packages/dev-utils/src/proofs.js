@@ -6,4 +6,6 @@
 module.exports = {
     /* 1 * 256**(2) + 0 * 256**(1) + 1 * 256**(0) */
     JOIN_SPLIT_PROOF: '65537',
+    MINT_PROOF: '65793',
+    BURN_PROOF: '66049',
 };

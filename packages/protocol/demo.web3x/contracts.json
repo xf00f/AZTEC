@@ -1,0 +1,21 @@
+{
+  "outputPath": "./src/contracts",
+  "contracts": {
+    "ACE": {
+      "source": "truffle",
+      "buildFile": "../build/contracts/ACE.json"
+    },
+    "ZkAsset": {
+      "source": "truffle",
+      "buildFile": "../build/contracts/ZkAsset.json"
+    },
+    "ERC20Mintable": {
+      "source": "truffle",
+      "buildFile": "../build/contracts/ERC20Mintable.json"
+    },
+    "JoinSplit": {
+      "source": "truffle",
+      "buildFile": "../build/contracts/JoinSplit.json"
+    }
+  }
+}

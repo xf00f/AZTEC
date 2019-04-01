@@ -1,0 +1,25 @@
+{
+  "name": "demo.web3x",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "license": "MIT",
+  "scripts": {
+    "start": "ts-node ./src"
+  },
+  "dependencies": {
+    "@types/memdown": "^3.0.0",
+    "aztec.js": "^0.6.0-beta.3",
+    "bn.js": "^4.11.8",
+    "levelup": "^4.0.0",
+    "lowdb": "^1.0.0",
+    "memdown": "3.0.0",
+    "ts-node": "^8.0.2",
+    "typescript": "^3.3.3",
+    "web3x": "^3.0.6"
+  },
+  "devDependencies": {
+    "@types/lowdb": "^1.0.6",
+    "tslint": "^5.12.1",
+    "tslint-config-prettier": "^1.18.0"
+  }
+}

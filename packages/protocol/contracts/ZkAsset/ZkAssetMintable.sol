@@ -6,6 +6,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./ZkAsset.sol";
 import "../ACE/ACE.sol";
+import "../ERC20/ERC20Mintable.sol";
 import "../libs/LibEIP712.sol";
 import "../libs/ProofUtils.sol";
 import "./ZkAssetOwnable.sol";
@@ -43,7 +44,7 @@ contract ZkAssetMintable is ZkAssetOwnable {
 
         (,
         bytes32 noteHash,
-        bytes memory metadata) = newTotal.extractNote();
+        bytes memory metadata) = newTotal.get(0).extractNote();
 
         logOutputNotes(mintedNotes);
         emit UpdateTotalMinted(noteHash, metadata);
@@ -61,25 +62,20 @@ contract ZkAssetMintable is ZkAssetOwnable {
         int256 publicValue) = proofOutput.extractProofOutput();
 
         (
-            IERC20 linkedToken,
             ,
-            uint totalSupply,
-            ,
-            ,
-            uint256 supplementTotal,
+            uint256 scalingFactor,
+            uint256 totalSupply,
             ,
             ,
-            address aceAddress
+            ,
         ) = ace.getRegistry(address(this));
         if (publicValue > 0) {
             if (totalSupply < uint256(publicValue)) {
                 uint256 supplementValue = uint256(publicValue).sub(totalSupply);
-
-                linkedToken.mint(address(this), supplementValue);
-                linkedToken.approve(aceAddress, supplementValue);
+                ERC20Mintable(address(linkedToken)).mint(address(this), supplementValue.mul(scalingFactor));
+                ERC20Mintable(address(linkedToken)).approve(address(ace), supplementValue.mul(scalingFactor));
 
                 ace.supplementTokens(supplementValue);
-                supplementTotal.add(supplementValue);
             }
         }
 

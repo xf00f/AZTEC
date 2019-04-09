@@ -102,14 +102,12 @@ describe('inputCoder tests', () => {
                 challenge,
             } = bilateralProof.constructProof([...inputNotes, ...outputNotes], senderAddress);
 
-            const inputOwners = inputNotes.map(m => m.owner);
-            const outputOwners = outputNotes.map(n => n.owner);
+            const owners = [...inputNotes.map(m => m.owner), ...outputNotes.map(n => n.owner)];
 
             const result = new HexString(abiEncoder.inputCoder.bilateralSwap(
                 proofData,
                 challenge,
-                inputOwners,
-                outputOwners,
+                owners,
                 outputNotes
             ).slice(2));
 
@@ -125,19 +123,15 @@ describe('inputCoder tests', () => {
                 expect(recoveredNote).to.equal(proofData[i].map(p => p.slice(2)).join(''));
             }
 
-            const offsetToInputOwners = parseInt(result.slice(0x40, 0x60), 16);
-            expect(parseInt(result.slice(offsetToInputOwners - 0x20, offsetToInputOwners), 16)).to.equal(2);
-            const recoveredInputOwners = new HexString(result.slice(offsetToInputOwners, offsetToInputOwners + (2 * 0x20)));
-            expect(recoveredInputOwners.slice(0x00, 0x20)).to.equal(padLeft(inputOwners[0].slice(2).toLowerCase(), 64));
-            expect(recoveredInputOwners.slice(0x20, 0x40)).to.equal(padLeft(inputOwners[1].slice(2).toLowerCase(), 64));
+            const offsetToOwners = parseInt(result.slice(0x40, 0x60), 16);
+            expect(parseInt(result.slice(offsetToOwners - 0x20, offsetToOwners), 16)).to.equal(4);
+            const recoveredOwners = new HexString(result.slice(offsetToOwners, offsetToOwners + (4 * 0x20)));
+            expect(recoveredOwners.slice(0x00, 0x20)).to.equal(padLeft(owners[0].slice(2).toLowerCase(), 64));
+            expect(recoveredOwners.slice(0x20, 0x40)).to.equal(padLeft(owners[1].slice(2).toLowerCase(), 64));
+            expect(recoveredOwners.slice(0x40, 0x60)).to.equal(padLeft(owners[2].slice(2).toLowerCase(), 64));
+            expect(recoveredOwners.slice(0x60, 0x80)).to.equal(padLeft(owners[3].slice(2).toLowerCase(), 64));
 
-            const offsetToOutputOwners = parseInt(result.slice(0x60, 0x80), 16);
-            expect(parseInt(result.slice(offsetToOutputOwners - 0x20, offsetToOutputOwners), 16)).to.equal(2);
-            const recoveredOutputOwners = new HexString(result.slice(offsetToOutputOwners, offsetToOutputOwners + (2 * 0x20)));
-            expect(recoveredOutputOwners.slice(0x00, 0x20)).to.equal(padLeft(outputOwners[0].slice(2).toLowerCase(), 64));
-            expect(recoveredOutputOwners.slice(0x20, 0x40)).to.equal(padLeft(outputOwners[1].slice(2).toLowerCase(), 64));
-
-            const offsetToMetadata = parseInt(result.slice(0x80, 0xa0), 16);
+            const offsetToMetadata = parseInt(result.slice(0x60, 0x80), 16);
             const metadataLength = parseInt(result.slice(offsetToMetadata - 0x20, offsetToMetadata), 16);
             expect(parseInt(result.slice(offsetToMetadata, offsetToMetadata + 0x20), 16)).to.equal(2);
 
@@ -171,7 +165,7 @@ describe('inputCoder tests', () => {
                 const schema = constants.eip712.JOIN_SPLIT_SIGNATURE;
                 const message = {
                     proof: proofs.JOIN_SPLIT_PROOF,
-                    note: proofData[index].slice(2, 6),
+                    noteHash: inputNote.noteHash,
                     challenge,
                     sender: senderAddress,
                 };
@@ -182,6 +176,7 @@ describe('inputCoder tests', () => {
 
             const publicOwner = accounts[0].address;
             const outputOwners = outputNotes.map(n => n.owner);
+            const inputOwners = inputNotes.map(n => n.owner);
 
             const result = new HexString(abiEncoder.inputCoder.joinSplit(
                 proofData,
@@ -189,6 +184,7 @@ describe('inputCoder tests', () => {
                 challenge,
                 publicOwner,
                 inputSignatures,
+                inputOwners,
                 outputOwners,
                 outputNotes
             ).slice(2));
@@ -219,15 +215,23 @@ describe('inputCoder tests', () => {
                 expect(recoveredSignature).to.equal(inputSignatures[i].map(s => s.slice(2)).join(''));
             }
 
-            const offsetToOwners = parseInt(result.slice(0xa0, 0xc0), 16);
+            const offsetToInputOwners = parseInt(result.slice(0xa0, 0xc0), 16);
             const numInputOwners = 2;
 
-            expect(parseInt(result.slice(offsetToOwners - 0x20, offsetToOwners), 16)).to.equal(numInputOwners);
-            const recoveredOwners = new HexString(result.slice(offsetToOwners, offsetToOwners + (2 * 0x20)));
-            expect(recoveredOwners.slice(0x00, 0x20)).to.equal(padLeft(outputOwners[0].slice(2).toLowerCase(), 64));
-            expect(recoveredOwners.slice(0x20, 0x40)).to.equal(padLeft(outputOwners[1].slice(2).toLowerCase(), 64));
+            expect(parseInt(result.slice(offsetToInputOwners - 0x20, offsetToInputOwners), 16)).to.equal(numInputOwners);
+            const recoveredInputOwners = new HexString(result.slice(offsetToInputOwners, offsetToInputOwners + (2 * 0x20)));
+            expect(recoveredInputOwners.slice(0x00, 0x20)).to.equal(padLeft(inputOwners[0].slice(2).toLowerCase(), 64));
+            expect(recoveredInputOwners.slice(0x20, 0x40)).to.equal(padLeft(inputOwners[1].slice(2).toLowerCase(), 64));
 
-            const offsetToMetadata = parseInt(result.slice(0xc0, 0xe0), 16);
+            const offsetToOutputOwners = parseInt(result.slice(0xc0, 0xe0), 16);
+            const numOutputOwners = 2;
+
+            expect(parseInt(result.slice(offsetToOutputOwners - 0x20, offsetToOutputOwners), 16)).to.equal(numOutputOwners);
+            const recoveredOutputOwners = new HexString(result.slice(offsetToOutputOwners, offsetToOutputOwners + (2 * 0x20)));
+            expect(recoveredOutputOwners.slice(0x00, 0x20)).to.equal(padLeft(outputOwners[0].slice(2).toLowerCase(), 64));
+            expect(recoveredOutputOwners.slice(0x20, 0x40)).to.equal(padLeft(outputOwners[1].slice(2).toLowerCase(), 64));
+
+            const offsetToMetadata = parseInt(result.slice(0xe0, 0x100), 16);
             const metadataLength = parseInt(result.slice(offsetToMetadata - 0x20, offsetToMetadata), 16);
             expect(parseInt(result.slice(offsetToMetadata, offsetToMetadata + 0x20), 16)).to.equal(2);
 

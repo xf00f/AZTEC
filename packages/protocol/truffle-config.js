@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { CoverageSubprovider } = require('@0x/sol-coverage');
+const { ProfilerSubprovider } = require('@0x/sol-profiler');
 const { RevertTraceSubprovider, TruffleArtifactAdapter } = require('@0x/sol-trace');
 const { GanacheSubprovider } = require('@0x/subproviders');
 const HDWalletProvider = require('truffle-hdwallet-provider');
@@ -44,15 +45,24 @@ let mainnetProvider = {};
 let ropstenProvider = {};
 
 const projectRoot = '';
+const isVerbose = true;
 const coverageSubproviderConfig = {
-    isVerbose: true,
+    isVerbose,
     ignoreFilesGlobs: ['**/node_modules/**', '**/interfaces/**', '**/test/**'],
 };
-const defaultFromAddress = getFirstAddress();
 const artifactAdapter = new TruffleArtifactAdapter(projectRoot, compilerConfig.solcVersion);
+const defaultFromAddress = getFirstAddress();
 const provider = new ProviderEngine();
 
 switch (process.env.MODE) {
+    case 'profile':
+        global.profilerSubprovider = new ProfilerSubprovider(
+            artifactAdapter,
+            defaultFromAddress,
+            isVerbose
+        );
+        provider.addProvider(global.profilerSubprovider);
+        break;
     case 'coverage':
         global.coverageSubprovider = new CoverageSubprovider(
             artifactAdapter,
@@ -65,7 +75,7 @@ switch (process.env.MODE) {
         provider.addProvider(new RevertTraceSubprovider(
             artifactAdapter,
             defaultFromAddress,
-            coverageSubproviderConfig
+            isVerbose
         ));
         break;
     default:
@@ -99,7 +109,7 @@ module.exports = {
             version: compilerConfig.solcVersion,
             settings: {
                 optimizer: {
-                    enabled: false,
+                    enabled: true,
                     runs: 200,
                 },
                 evmVersion: 'petersburg',
@@ -113,7 +123,7 @@ module.exports = {
     networks: {
         development: {
             provider,
-            gas: 6000000,
+            gas: 6500000,
             gasPrice: toHex(toWei('1', 'gwei')),
             network_id: '*', // eslint-disable-line camelcase
             port: 8545,

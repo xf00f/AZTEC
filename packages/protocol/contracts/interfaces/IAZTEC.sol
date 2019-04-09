@@ -8,6 +8,12 @@ contract IAZTEC {
         BURN,
         UTILITY
     }
+
+    enum NoteStatus {
+        DOES_NOT_EXIST,
+        UNSPENT,
+        SPENT
+    }
     // proofEpoch = 1 | proofCategory = 1 | proofId = 1
     // 1 * 256**(2) + 1 * 256**(1) ++ 1 * 256**(0)
     uint24 public constant JOIN_SPLIT_PROOF = 65793;
@@ -19,4 +25,7 @@ contract IAZTEC {
     // proofEpoch = 1 | proofCategory = 3 | proofId = 1
     // (1 * 256**(2)) + (3 * 256**(1)) + (1 * 256**(0))
     uint24 public constant BURN_PROOF = 66305;
+
+    // Hash of a dummy AZTEC note with k = 0 and a = 1
+    bytes32 public constant ZERO_VALUE_NOTE_HASH = 0xcbc417524e52b95c42a4c42d357938497e3d199eb9b4a0139c92551d4000bc3c;
 }

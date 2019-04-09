@@ -12,7 +12,7 @@ import "./BilateralSwapABIEncoder.sol";
  * The intended use case is to call this externally via `staticcall`. External 
  * calls to OptimizedAZTEC can be treated as pure functions as this contract 
  * contains no storage and makes no external calls (other than to precompiles)
- * Copyright Spilbury Holdings Ltd 2018. All rights reserved.
+ * Copyright Spilbury Holdings Ltd 2019. All rights reserved.
  **/
 contract BilateralSwap {
 
@@ -22,7 +22,8 @@ contract BilateralSwap {
      * @notice See BilateralSwapInterface for how method calls should be constructed.
      * AZTECBilateralSwap is written in YUL to enable manual memory management and for other efficiency savings.
      **/
-    function() external payable {
+    // solhint-disable payable-fallback
+    function() external {
         assembly {
 
             // We don't check for function signatures, there's only one function that 
@@ -31,6 +32,10 @@ contract BilateralSwap {
             // this contract through a comp\atible ABI
             validateBilateralSwap()
 
+            // if we get to here, the proof is valid. We now 'fall through' the assembly block
+            // and into JoinSplitABI.validateJoinSplit()
+            // reset the free memory pointer because we're touching Solidity code again
+            mstore(0x40, 0x60)
             /**
              * New calldata map
              * 0x04:0x24      = calldata location of proofData byte array 

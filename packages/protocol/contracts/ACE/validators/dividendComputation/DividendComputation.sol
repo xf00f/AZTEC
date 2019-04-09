@@ -12,7 +12,7 @@ import "../../../interfaces/DividendComputationInterface.sol";
  * The intended use case is to call this externally via `staticcall`. External calls to OptimizedAZTEC 
  * can be treated as pure functions as this contract contains no storage and makes no external calls 
  * (other than to precompiles).
- * Copyright Spilbury Holdings Ltd 2018. All rights reserved.
+ * Copyright Spilbury Holdings Ltd 2019. All rights reserved.
  **/
 contract DividendComputation {
     /**
@@ -21,14 +21,20 @@ contract DividendComputation {
      * @notice See DividendComputationInterface for how method calls should be constructed.
      * DividendComputation is written in YUL to enable manual memory management and for other efficiency savings.
      **/
-    function() external payable {
+    // solhint-disable payable-fallback
+    function() external {
         assembly {
 
             // We don't check for function signatures, there's only one function 
-            // that ever gets called: validateDividendCalc()
+            // that ever gets called: validateDividendComputation()
             // We still assume calldata is offset by 4 bytes so that we can 
             // represent this contract through a compatible ABI
             validateDividendComputation()
+
+            // if we get to here, the proof is valid. We now 'fall through' the assembly block
+            // and into DividendComputationABIEncoder.encodeAndExit()
+            // reset the free memory pointer because we're touching Solidity code again
+            mstore(0x40, 0x60)
 
             /**
              * New calldata map

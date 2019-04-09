@@ -53,7 +53,7 @@ contract('Join Split ABI Encoder', (accounts) => {
                 const schema = constants.eip712.JOIN_SPLIT_SIGNATURE;
                 const message = {
                     proof: JOIN_SPLIT_PROOF,
-                    note: proofData[index].slice(2, 6),
+                    noteHash: inputNote.noteHash,
                     challenge,
                     sender: senderAddress,
                 };
@@ -62,13 +62,17 @@ contract('Join Split ABI Encoder', (accounts) => {
                 return signature;
             });
             const publicOwner = aztecAccounts[0].address;
+
             const outputOwners = outputNotes.map(n => n.owner);
+            const inputOwners = inputNotes.map(n => n.owner);
+
             const data = joinSplitEncode(
                 proofData,
                 m,
                 challenge,
                 publicOwner,
                 inputSignatures,
+                inputOwners,
                 outputOwners,
                 outputNotes
             );
@@ -83,8 +87,8 @@ contract('Join Split ABI Encoder', (accounts) => {
                 outputNotes,
                 publicOwner,
                 publicValue: 0,
+                challenge,
             }]);
-
             const decoded = outputCoder.decodeProofOutputs(`0x${padLeft('0', 64)}${result.slice(2)}`);
             expect(decoded[0].outputNotes[0].gamma.eq(outputNotes[0].gamma)).to.equal(true);
             expect(decoded[0].outputNotes[0].sigma.eq(outputNotes[0].sigma)).to.equal(true);
@@ -106,14 +110,9 @@ contract('Join Split ABI Encoder', (accounts) => {
 
             expect(decoded[0].publicOwner).to.equal(publicOwner.toLowerCase());
             expect(decoded[0].publicValue).to.equal(0);
+            expect(decoded[0].challenge).to.equal(challenge);
             expect(result.slice(2)).to.equal(expected.slice(0x42));
             expect(result.slice(2).length / 2).to.equal(parseInt(expected.slice(0x02, 0x42), 16));
-            const gasUsed = await joinSplitAbiEncoder.validateJoinSplit.estimateGas(data, senderAddress, CRS, {
-                from: accounts[0],
-                gas: 4000000,
-            });
-
-            console.log('gas used = ', gasUsed);
         });
     });
 });

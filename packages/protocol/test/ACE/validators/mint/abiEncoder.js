@@ -6,7 +6,9 @@ const {
     note,
     proof: { mint },
 } = require('aztec.js');
-const { constants: { CRS } } = require('@aztec/dev-utils');
+const {
+    constants: { CRS },
+} = require('@aztec/dev-utils');
 const { padLeft } = require('web3-utils');
 
 // ### Artifacts
@@ -53,16 +55,16 @@ contract('AdjustSupply ABI Encoder on a mint proof', (accounts) => {
 
             const decoded = outputCoder.decodeProofOutputs(`0x${padLeft('0', 64)}${result.slice(2)}`);
 
+            expect(decoded[0].inputNotes[0].gamma.eq(oldTotalMinted.gamma)).to.equal(true);
+            expect(decoded[0].inputNotes[0].sigma.eq(oldTotalMinted.sigma)).to.equal(true);
+            expect(decoded[0].inputNotes[0].noteHash).to.equal(oldTotalMinted.noteHash);
+            expect(decoded[0].inputNotes[0].owner).to.equal(oldTotalMinted.owner.toLowerCase());
+
             // First proofOutput object (1 input note, 1 output note)
             expect(decoded[0].outputNotes[0].gamma.eq(newTotalMinted.gamma)).to.equal(true);
             expect(decoded[0].outputNotes[0].sigma.eq(newTotalMinted.sigma)).to.equal(true);
             expect(decoded[0].outputNotes[0].noteHash).to.equal(newTotalMinted.noteHash);
             expect(decoded[0].outputNotes[0].owner).to.equal(newTotalMinted.owner.toLowerCase());
-
-            expect(decoded[0].inputNotes[0].gamma.eq(oldTotalMinted.gamma)).to.equal(true);
-            expect(decoded[0].inputNotes[0].sigma.eq(oldTotalMinted.sigma)).to.equal(true);
-            expect(decoded[0].inputNotes[0].noteHash).to.equal(oldTotalMinted.noteHash);
-            expect(decoded[0].inputNotes[0].owner).to.equal(oldTotalMinted.owner.toLowerCase());
 
             expect(decoded[0].publicOwner).to.equal(publicOwner.toLowerCase());
             expect(decoded[0].publicValue).to.equal(publicValue);
@@ -81,13 +83,6 @@ contract('AdjustSupply ABI Encoder on a mint proof', (accounts) => {
             expect(decoded[1].publicOwner).to.equal(publicOwner.toLowerCase());
             expect(decoded[1].publicValue).to.equal(publicValue);
             expect(result).to.equal(expectedOutput);
-
-            const gasUsed = await adjustSupplyAbiEncoder.validateAdjustSupply.estimateGas(proofData, senderAddress, CRS, {
-                from: accounts[0],
-                gas: 4000000,
-            });
-
-            console.log('gas used = ', gasUsed);
         });
     });
 });

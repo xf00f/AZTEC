@@ -1,10 +1,3 @@
-/**
- * Helper methods to construct AZTEC zero-knowledge proof commitments. Used for debugging and testing.
- *
- * @namespace proofHelpers
- * @memberof module:proof.joinSplit
- */
-
 const BN = require('bn.js');
 const crypto = require('crypto');
 const { padLeft, toHex } = require('web3-utils');
@@ -26,23 +19,22 @@ function generateCommitment(k) {
 // constructs an AZTEC commitment directly from the setup algorithm's trapdoor key.
 // Used for testing purposes only; we don't know the trapdoor key for the real deal.
 function generateFakeCommitment(k, trapdoor) {
+    const commitment = generateCommitment(k);
     const kBn = new BN(k).toRed(bn128.groupReduction);
     const mu = bn128.h.mul(trapdoor.redSub(kBn).redInvm());
-    const a = new BN(crypto.randomBytes(32), 16).toRed(bn128.groupReduction);
-    const gamma = mu.mul(a);
-    const sigma = gamma.mul(kBn).add(bn128.h.mul(a));
+    const gamma = mu.mul(commitment.a);
+    const sigma = gamma.mul(kBn).add(bn128.h.mul(commitment.a));
     return {
+        ...commitment,
         gamma,
         sigma,
-        a,
-        k: kBn,
     };
 }
 
 /**
  * Create a set of AZTEC commitments from vectors of input and output values
  * @method generateCommitmentSet
- * @memberof module:proof.joinSplit.helpers
+ * @memberof module:joinSplit
  * @param {Object} values
  * @param {number[]} values.kIn vector of input note values
  * @param {number[]} values.kOut vector of output note values
@@ -63,7 +55,7 @@ helpers.generateCommitmentSet = ({ kIn, kOut }) => {
  * Create a set of fake AZTEC commitments from vectors of input and output values.  
  * This method uses a randomly generated trapdoor key instead of the trusted setup key.
  * @method generateFakeCommitmentSet
- * @memberof module:proof.joinSplit.helpers
+ * @memberof module:joinSplit
  * @param {Object} values
  * @param {number[]} values.kIn vector of input note values
  * @param {number[]} values.kOut vector of output note values

@@ -2,33 +2,25 @@
  * Module to ECDSA signatures over structured data,  
  *   following the [EIP712]{@link https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md} standard
  *
- * @namespace sign
- * @memberof module:sign
+ * @module sign
  */
 
 const { constants, proofs } = require('@aztec/dev-utils');
 const eip712 = require('./eip712');
 const secp256k1 = require('../secp256k1');
 
-// For backwards compatibility. TODO: remove
-const defaultDomain = {
-    name: 'AZTEC_CRYPTOGRAPHY_ENGINE',
-    version: '1',
-};
-
 const sign = {};
 sign.eip712 = eip712;
 
 /**
- * Generate EIP712 domain parameters for AZTECERC20Bridge.sol
+ * Generate EIP712 domain parameters for ACE.sol
  * @method generateAZTECDomainParams
- * @memberof module:sign
  * @param {string} verifyingContract address of target contract
  * @returns {Object} EIP712 Domain type object
  */
 sign.generateAZTECDomainParams = function generateAZTECDomainParams(
     verifyingContract,
-    domain = defaultDomain
+    domain = constants.eip712.ACE_DOMAIN_PARAMS
 ) {
     return {
         name: domain.name,
@@ -38,9 +30,23 @@ sign.generateAZTECDomainParams = function generateAZTECDomainParams(
 };
 
 /**
+ * Generate EIP712 domain parameters for ZkAsset.sol
+ * @method generateZKAssetDomainParams
+ * @param {string} verifyingContract address of target contract
+ * @returns {Object} EIP712 Domain type object
+ */
+sign.generateZKAssetDomainParams = function generateZKAssetDomainParams(
+    verifyingContract
+) {
+    return {
+        ...constants.eip712.ZK_ASSET_DOMAIN_PARAMS,
+        verifyingContract,
+    };
+};
+
+/**
  * Create an EIP712 ECDSA signature over structured data
  * @method signStructuredData
- * @memberof module:sign
  * @param {string} schema JSON object that defines the structured data of the signature
  * @param {string[]} domain variables required for the domain hash part of the signature
  * @param {string} message the Ethereum address sending the AZTEC transaction (not necessarily the note signer)
@@ -61,7 +67,6 @@ sign.signStructuredData = function signStructuredData(domain, schema, message, p
 /**
  * Recover the Ethereum address of an EIP712 AZTEC note signature
  * @method recoverAddress
- * @memberof module:sign
  * @param {string[]} note bytes32 array of AZTEC zero-knowledge proof note (indices 0 and 1 are not needed here)
  * @param {string} challenge AZTEC zero-knowledge proof challenge variable
  * @param {string} senderAddress the Ethereum address sending the AZTEC transaction (not necessarily the note signer)

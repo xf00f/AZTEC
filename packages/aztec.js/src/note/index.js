@@ -1,3 +1,4 @@
+
 const BN = require('bn.js');
 const web3Utils = require('web3-utils');
 const crypto = require('crypto');
@@ -16,7 +17,7 @@ const { padLeft } = web3Utils;
  *
  * @method createSharedSecret
  * @private
- * @memberof module:note
+ * @memberof module:noteUtils
  * @param {Object} pubicKeyHex elliptic.js hex-formatted public key
  * @return {{type: string, name: ephemeralKey}} elliptic.js hex-formatted ephemeral key
  * @return {{type: string, name: encoded}} hex-string formatted shared secret
@@ -285,6 +286,15 @@ note.encodeMetadata = (noteArray) => {
         return `${acc}${padLeft(ephemeral.slice(2), 66)}`; // remove elliptic.js encoding byte, broadcast metadata is always compressed
     }, '0x');
 };
+
+/**
+ * Create a zero value note with from a constant a to make the hash of the initial totalMinted note in
+ * mintable assets a constant
+ *
+ * @method createZeroValueNote
+ * @returns {Note} created note instance
+ */
+note.createZeroValueNote = () => note.fromViewKey(utils.constants.ZERO_VALUE_NOTE_VIEWING_KEY);
 
 /**
  * Export the Note class as part of the note module. We shouldn't really use this directly, but useful for testing purposes

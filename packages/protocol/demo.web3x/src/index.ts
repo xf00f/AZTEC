@@ -5,20 +5,31 @@ import { Address } from 'web3x/address';
 import { Eth } from 'web3x/eth';
 import { EvmProvider } from 'web3x/evm/provider';
 import { EthereumProvider, WebsocketProvider } from 'web3x/providers';
+import { bufferToHex } from 'web3x/utils';
 import { Wallet } from 'web3x/wallet';
 import { ZkAsset, ZkAssetTransactionReceipt } from './contracts/ZkAsset';
 import { Db, MemoryDb } from './db';
 import { deployContracts, SCALING_FACTOR } from './deploy';
-import { NoteController, Proof } from './notes';
+import { NoteController } from './notes';
 import { NoteDao } from './notes/note-dao';
 import { TransactionsController } from './transactions';
 import { TransactionsDao } from './transactions/transactions-dao';
 import { WalletsController } from './wallets';
 import { WalletsDao } from './wallets/wallets-dao';
 
+const { note, proof } = require('aztec.js');
+
 async function demoTransactions(provider: EthereumProvider, wallet: Wallet) {
   const eth = new Eth(provider);
-  const accounts = wallet.currentAddresses();
+  const addresses = wallet.currentAddresses();
+  const accounts = addresses.map(a => {
+    const acc = wallet.get(a)!;
+    return {
+      address: acc.address.toString(),
+      publicKey: bufferToHex(acc.publicKey),
+      privateKey: bufferToHex(acc.privateKey),
+    };
+  });
   const chainId = await eth.getId();
 
   console.log(`Running on chainId: ${chainId}`);
@@ -30,18 +41,19 @@ async function demoTransactions(provider: EthereumProvider, wallet: Wallet) {
 
   await walletsController.initFromWallet(wallet);
 
-  eth.defaultFromAddress = accounts[0];
+  console.log(`Default address: ${addresses[0]}`);
+  eth.defaultFromAddress = addresses[0];
 
   const { erc20, ace, joinSplit, zkErc20 } = await deployContracts(eth, chainId);
 
   console.log('Minting 100 tokens...');
   await erc20.methods
-    .mint(accounts[0], SCALING_FACTOR.muln(100))
+    .mint(addresses[0], SCALING_FACTOR.muln(100))
     .send()
     .getReceipt();
   console.log('Minted.');
 
-  console.log(`Approving aztec to spend 100 tokens owned by ${accounts[0]}`);
+  console.log(`Approving aztec to spend 100 tokens owned by ${addresses[0]}`);
   await erc20.methods
     .approve(ace.address!, SCALING_FACTOR.muln(100))
     .send()
@@ -50,50 +62,49 @@ async function demoTransactions(provider: EthereumProvider, wallet: Wallet) {
   const receipts: ZkAssetTransactionReceipt[] = [];
   // const proofs: string[] = [];
 
-  console.log('Issuing first join-split transaction...');
-  const { proofData, expectedOutput } = noteController.createConfidentialTransfer(
-    [],
-    [[accounts[0], 22], [accounts[0], 20], [accounts[1], 22], [accounts[2], 36]],
-    -100,
-    accounts[0],
-    joinSplit.address!
-  );
+  const notes1 = [note.create(accounts[0].publicKey, 70), note.create(accounts[0].publicKey, 30)];
+  const notes2 = [note.create(accounts[1].publicKey, 40), note.create(accounts[1].publicKey, 60)];
 
-  const proofOutput = abiEncoder.outputCoder.getProofOutput(expectedOutput, 0);
-  const proofHash = abiEncoder.outputCoder.hashProofOutput(proofOutput);
-  await ace.methods
-    .publicApprove(zkErc20.address!, proofHash, 100)
-    .send()
-    .getReceipt();
+  {
+    console.log('Issuing first join-split transaction...');
+    const { proofData, expectedOutput } = proof.joinSplit.encodeJoinSplitTransaction({
+      inputNotes: [],
+      outputNotes: notes1,
+      senderAddress: accounts[0].address,
+      inputNoteOwners: [],
+      publicOwner: accounts[0].address,
+      kPublic: -100,
+      validatorAddress: joinSplit.address!.toString(),
+    });
 
-  receipts[0] = await confidentialTransfer(accounts[0], zkErc20, proofData, transactionsController);
-  console.log('First join-split transaction mined, issuing second join-split transaction...');
+    const depositProofOutput = abiEncoder.outputCoder.getProofOutput(expectedOutput, 0);
+    const depositProofHash = abiEncoder.outputCoder.hashProofOutput(depositProofOutput);
 
-  /*
-  proofs[1] = noteController.createConfidentialTransfer(
-    chainId,
-    [proofs[0].noteHashes[0], proofs[0].noteHashes[2]],
-    [[accounts[0], 30], [accounts[2], 14]],
-    0,
-    accounts[0],
-    aztec.address!
-  );
+    await ace.methods
+      .publicApprove(zkErc20.address!, depositProofHash, 100)
+      .send()
+      .getReceipt();
 
-  receipts[1] = await confidentialTransfer(accounts[0], aztec, proofs[1], transactionsController);
+    receipts[0] = await confidentialTransfer(addresses[0], zkErc20, proofData, transactionsController);
+  }
+
+  {
+    console.log('First join-split transaction mined, issuing second join-split transaction...');
+    const { proofData } = proof.joinSplit.encodeJoinSplitTransaction({
+      inputNotes: notes1,
+      outputNotes: notes2,
+      senderAddress: accounts[0].address,
+      inputNoteOwners: [accounts[0], accounts[0]],
+      publicOwner: accounts[0].address,
+      kPublic: 0,
+      validatorAddress: joinSplit.address!.toString(),
+    });
+
+    receipts[1] = await confidentialTransfer(addresses[0], zkErc20, proofData, transactionsController);
+  }
+
   console.log('Second join-split transaction mined, issuing third join-split transaction...');
-
-  proofs[2] = noteController.createConfidentialTransfer(
-    chainId,
-    [proofs[0].noteHashes[1], proofs[0].noteHashes[3]],
-    [[accounts[0], 25], [accounts[2], 25]],
-    6,
-    accounts[1],
-    aztec.address!
-  );
-
-  receipts[2] = await confidentialTransfer(accounts[1], aztec, proofs[2], transactionsController);
-  console.log('Third join-split transaction mined.');
-  */
+  // console.log('Third join-split transaction mined.');
 }
 
 async function confidentialTransfer(
@@ -115,13 +126,18 @@ async function confidentialTransfer(
 
 async function main() {
   const provider = await EvmProvider.fromDb(levelup(memdown()));
-  // const provider = new WebsocketProvider('ws://localhost:8545');
   const wallet = Wallet.fromMnemonic('alarm disagree index ridge tone outdoor betray pole forum source okay joy', 3);
   await provider.loadWallet(wallet);
+  await demoTransactions(provider, wallet);
+}
+
+async function mainG() {
+  const provider = new WebsocketProvider('ws://localhost:8545');
+  const wallet = Wallet.fromMnemonic('alarm disagree index ridge tone outdoor betray pole forum source okay joy', 3);
   try {
     await demoTransactions(provider, wallet);
   } finally {
-    // provider.disconnect();
+    provider.disconnect();
   }
 }
 

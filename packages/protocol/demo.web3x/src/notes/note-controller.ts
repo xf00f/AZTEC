@@ -69,6 +69,7 @@ export class NoteController {
   }
 
   public createConfidentialTransfer(
+    inputNoteOwners: { privateKey: string }[],
     inputNoteHashes: string[],
     outputNoteData: [Address, number][],
     v: number,
@@ -81,7 +82,7 @@ export class NoteController {
       inputNotes,
       outputNotes,
       senderAddress: senderAddress.toString(),
-      inputNoteOwners: [],
+      inputNoteOwners,
       publicOwner: senderAddress.toString(),
       kPublic: v,
       validatorAddress: joinSplitAddress.toString(),

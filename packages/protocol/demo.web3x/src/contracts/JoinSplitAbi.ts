@@ -15,8 +15,8 @@ export default new ContractAbi([
     "type": "function"
   },
   {
-    "payable": true,
-    "stateMutability": "payable",
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "fallback"
   }
 ]);

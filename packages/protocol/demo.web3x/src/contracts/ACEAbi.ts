@@ -17,6 +17,97 @@ export default new ContractAbi([
   {
     "constant": true,
     "inputs": [],
+    "name": "ZERO_VALUE_NOTE_HASH",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_value",
+        "type": "uint256"
+      }
+    ],
+    "name": "supplementTokens",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "disabledValidators",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "validators",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -45,6 +136,42 @@ export default new ContractAbi([
   {
     "constant": true,
     "inputs": [],
+    "name": "isOwner",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_proof",
+        "type": "uint24"
+      },
+      {
+        "name": "_proofOutput",
+        "type": "bytes"
+      },
+      {
+        "name": "_proofSender",
+        "type": "address"
+      }
+    ],
+    "name": "updateNoteRegistry",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
     "name": "latestEpoch",
     "outputs": [
       {
@@ -54,6 +181,32 @@ export default new ContractAbi([
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_linkedTokenAddress",
+        "type": "address"
+      },
+      {
+        "name": "_scalingFactor",
+        "type": "uint256"
+      },
+      {
+        "name": "_canAdjustSupply",
+        "type": "bool"
+      },
+      {
+        "name": "_canConvert",
+        "type": "bool"
+      }
+    ],
+    "name": "createNoteRegistry",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -77,25 +230,91 @@ export default new ContractAbi([
   },
   {
     "constant": true,
-    "inputs": [
-      {
-        "name": "",
-        "type": "uint8"
-      },
-      {
-        "name": "",
-        "type": "uint8"
-      },
-      {
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "name": "validators",
+    "inputs": [],
+    "name": "BURN_PROOF",
     "outputs": [
       {
         "name": "",
+        "type": "uint24"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_registryOwner",
         "type": "address"
+      },
+      {
+        "name": "_proofHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "_value",
+        "type": "uint256"
+      }
+    ],
+    "name": "publicApprove",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "getRegistry",
+    "outputs": [
+      {
+        "name": "linkedToken",
+        "type": "address"
+      },
+      {
+        "name": "scalingFactor",
+        "type": "uint256"
+      },
+      {
+        "name": "totalSupply",
+        "type": "uint256"
+      },
+      {
+        "name": "confidentialTotalMinted",
+        "type": "bytes32"
+      },
+      {
+        "name": "confidentialTotalBurned",
+        "type": "bytes32"
+      },
+      {
+        "name": "canConvert",
+        "type": "bool"
+      },
+      {
+        "name": "canAdjustSupply",
+        "type": "bool"
       }
     ],
     "payable": false,
@@ -104,12 +323,33 @@ export default new ContractAbi([
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "BURN_PROOF",
+    "inputs": [
+      {
+        "name": "_registryOwner",
+        "type": "address"
+      },
+      {
+        "name": "_noteHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getNote",
     "outputs": [
       {
-        "name": "",
-        "type": "uint24"
+        "name": "status",
+        "type": "uint8"
+      },
+      {
+        "name": "createdOn",
+        "type": "uint40"
+      },
+      {
+        "name": "destroyedOn",
+        "type": "uint40"
+      },
+      {
+        "name": "noteOwner",
+        "type": "address"
       }
     ],
     "payable": false,
@@ -174,6 +414,77 @@ export default new ContractAbi([
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_proof",
+        "type": "uint24"
+      },
+      {
+        "name": "_proofData",
+        "type": "bytes"
+      },
+      {
+        "name": "_proofSender",
+        "type": "address"
+      }
+    ],
+    "name": "mint",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_proof",
+        "type": "uint24"
+      },
+      {
+        "name": "_proofData",
+        "type": "bytes"
+      },
+      {
+        "name": "_proofSender",
+        "type": "address"
+      }
+    ],
+    "name": "burn",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [
       {
@@ -214,74 +525,6 @@ export default new ContractAbi([
     ],
     "name": "clearProofByHashes",
     "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_proof",
-        "type": "uint24"
-      },
-      {
-        "name": "_proofData",
-        "type": "bytes"
-      },
-      {
-        "name": "_proofSender",
-        "type": "address"
-      }
-    ],
-    "name": "mint",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bytes"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_value",
-        "type": "uint256"
-      }
-    ],
-    "name": "supplementTokens",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_proof",
-        "type": "uint24"
-      },
-      {
-        "name": "_proofData",
-        "type": "bytes"
-      },
-      {
-        "name": "_proofSender",
-        "type": "address"
-      }
-    ],
-    "name": "burn",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bytes"
-      }
-    ],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
@@ -369,73 +612,17 @@ export default new ContractAbi([
     "type": "function"
   },
   {
-    "constant": false,
-    "inputs": [
+    "constant": true,
+    "inputs": [],
+    "name": "getCommonReferenceString",
+    "outputs": [
       {
-        "name": "_linkedTokenAddress",
-        "type": "address"
-      },
-      {
-        "name": "_scalingFactor",
-        "type": "uint256"
-      },
-      {
-        "name": "_canAdjustSupply",
-        "type": "bool"
-      },
-      {
-        "name": "_canConvert",
-        "type": "bool"
+        "name": "",
+        "type": "bytes32[6]"
       }
     ],
-    "name": "createNoteRegistry",
-    "outputs": [],
     "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_proof",
-        "type": "uint24"
-      },
-      {
-        "name": "_proofSender",
-        "type": "address"
-      },
-      {
-        "name": "_proofOutput",
-        "type": "bytes"
-      }
-    ],
-    "name": "updateNoteRegistry",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "_registryOwner",
-        "type": "address"
-      },
-      {
-        "name": "_proofHash",
-        "type": "bytes32"
-      },
-      {
-        "name": "_value",
-        "type": "uint256"
-      }
-    ],
-    "name": "publicApprove",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -449,108 +636,8 @@ export default new ContractAbi([
     "name": "getValidatorAddress",
     "outputs": [
       {
-        "name": "",
+        "name": "validatorAddress",
         "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "_owner",
-        "type": "address"
-      }
-    ],
-    "name": "getRegistry",
-    "outputs": [
-      {
-        "name": "_linkedToken",
-        "type": "address"
-      },
-      {
-        "name": "_scalingFactor",
-        "type": "uint256"
-      },
-      {
-        "name": "_totalSupply",
-        "type": "uint256"
-      },
-      {
-        "name": "_confidentialTotalMinted",
-        "type": "bytes32"
-      },
-      {
-        "name": "_confidentialTotalBurned",
-        "type": "bytes32"
-      },
-      {
-        "name": "_supplementTotal",
-        "type": "uint256"
-      },
-      {
-        "name": "_canAdjustSupply",
-        "type": "bool"
-      },
-      {
-        "name": "_canConvert",
-        "type": "bool"
-      },
-      {
-        "name": "aceAddress",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "_registryOwner",
-        "type": "address"
-      },
-      {
-        "name": "_noteHash",
-        "type": "bytes32"
-      }
-    ],
-    "name": "getNote",
-    "outputs": [
-      {
-        "name": "_status",
-        "type": "uint8"
-      },
-      {
-        "name": "_createdOn",
-        "type": "bytes5"
-      },
-      {
-        "name": "_destroyedOn",
-        "type": "bytes5"
-      },
-      {
-        "name": "_noteOwner",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "getCommonReferenceString",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bytes32[6]"
       }
     ],
     "payable": false,

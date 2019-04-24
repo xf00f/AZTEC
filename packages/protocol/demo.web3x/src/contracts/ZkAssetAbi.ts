@@ -16,6 +16,20 @@ export default new ContractAbi([
   },
   {
     "constant": true,
+    "inputs": [],
+    "name": "ZERO_VALUE_NOTE_HASH",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
     "inputs": [
       {
         "name": "",
